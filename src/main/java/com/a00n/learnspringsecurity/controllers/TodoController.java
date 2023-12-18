@@ -3,12 +3,15 @@ package com.a00n.learnspringsecurity.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.a00n.learnspringsecurity.entities.MyUserDetails;
 import com.a00n.learnspringsecurity.entities.Todo;
 import com.a00n.learnspringsecurity.repositories.TodoRepository;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +25,12 @@ public class TodoController {
 
     @GetMapping
     public List<Todo> findAll() {
-        return todoRepository.findAll();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            MyUserDetails user = (MyUserDetails) authentication.getPrincipal();
+            return todoRepository.findByUser(user.getUser());
+        }
+        return null;
     }
 
     @PostMapping
